@@ -15,17 +15,11 @@ export const defaultPortfolio: PortfolioData = {
   },
 
   about: "",
-
   experiences: [],
-
   education: [],
-
   skills: [],
-
   certifications: [],
-
   achievements: [],
-
   gallery: [],
 
   documents: {
@@ -33,11 +27,6 @@ export const defaultPortfolio: PortfolioData = {
   },
 };
 
-/**
- * Reads the locally cached portfolio.
- * The local copy is only a client-side cache.
- * Supabase remains the real source of truth.
- */
 export function getPortfolio(): PortfolioData {
   if (typeof window === "undefined") {
     return defaultPortfolio;
@@ -56,10 +45,6 @@ export function getPortfolio(): PortfolioData {
   }
 }
 
-/**
- * Stores a portfolio locally without contacting Supabase.
- * Used when we receive fresh data from the server.
- */
 export function cachePortfolio(data: PortfolioData) {
   if (typeof window === "undefined") {
     return;
@@ -68,58 +53,58 @@ export function cachePortfolio(data: PortfolioData) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
-/**
- * Saves the portfolio to both:
- *
- * 1. Supabase through /api/portfolio
- * 2. localStorage as a client-side cache
- *
- * Supabase is the source of truth.
- */
-export function savePortfolio(data: PortfolioData) {
-  if (typeof window === "undefined") {
-    return;
+export async function loadPortfolioFromServer(): Promise<PortfolioData> {
+  const response = await fetch("/api/portfolio", {
+    method: "GET",
+    cache: "no-store",
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result.error || "Failed to load portfolio."
+    );
   }
 
-  cachePortfolio(data);
+  const portfolio = result as PortfolioData;
 
-  void fetch("/api/portfolio", {
+  cachePortfolio(portfolio);
+
+  return portfolio;
+}
+
+export async function savePortfolio(
+  data: PortfolioData
+): Promise<PortfolioData> {
+  const response = await fetch("/api/portfolio", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(data),
-  }).then(async (response) => {
-    if (!response.ok) {
-      const result = await response.json().catch(() => null);
-
-      console.error(
-        "Failed to save portfolio to Supabase:",
-        result?.error || "Unknown error"
-      );
-
-      return;
-    }
-
-    const savedPortfolio = await response.json();
-
-    cachePortfolio(savedPortfolio);
-  }).catch((error) => {
-    console.error("Portfolio save failed:", error);
   });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result.error || "Failed to save portfolio."
+    );
+  }
+
+  const savedPortfolio = result as PortfolioData;
+
+  cachePortfolio(savedPortfolio);
+
+  return savedPortfolio;
 }
 
-/**
- * Updates the portfolio using the existing
- * builder form pattern.
- */
-export function updatePortfolio(
+export async function updatePortfolio(
   updater: (current: PortfolioData) => PortfolioData
-) {
-  const current = getPortfolio();
+): Promise<PortfolioData> {
+  const current = await loadPortfolioFromServer();
   const updated = updater(current);
 
-  savePortfolio(updated);
-
-  return updated;
+  return savePortfolio(updated);
 }

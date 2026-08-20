@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import {
   getPortfolio,
@@ -10,18 +10,18 @@ import { Skill } from "@/types/portfolio";
 import SectionHeader from "@/components/shared/SectionHeader";
 
 export default function SkillsForm() {
-  const [items, setItems] = useState<Skill[]>([]);
-
-  useEffect(() => {
-    setItems(getPortfolio().skills);
-  }, []);
+  const [items, setItems] = useState<Skill[]>(
+    () => getPortfolio().skills
+  );
 
   function save(updated: Skill[]) {
     setItems(updated);
 
-    savePortfolio({
+    void savePortfolio({
       ...getPortfolio(),
       skills: updated,
+    }).catch((error) => {
+      console.error("Failed to save skills:", error);
     });
   }
 
@@ -57,7 +57,6 @@ export default function SkillsForm() {
 
   return (
     <div>
-
       <SectionHeader
         eyebrow="Professional Competencies"
         title="Clinical Skills"
@@ -73,13 +72,11 @@ export default function SkillsForm() {
       </button>
 
       <div className="grid gap-5 md:grid-cols-2">
-
         {items.map((item) => (
           <div
             key={item.id}
             className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
           >
-
             <div className="flex justify-end">
               <button
                 onClick={() => remove(item.id)}
@@ -120,12 +117,9 @@ export default function SkillsForm() {
               rows={4}
               className="mt-4 w-full rounded-xl border border-slate-200 px-4 py-3"
             />
-
           </div>
         ))}
-
       </div>
-
     </div>
   );
 }

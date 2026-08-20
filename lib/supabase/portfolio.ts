@@ -141,12 +141,30 @@ export async function saveUserPortfolio(
     throw new Error("You must be logged in.");
   }
 
+  const { data: existing, error: existingError } = await supabase
+    .from("portfolios")
+    .select("username")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (existingError) {
+    throw new Error(existingError.message);
+  }
+
+  const username =
+    existing?.username ||
+    `${(user.email?.split("@")[0] || "clinical-officer")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 30)}-${user.id.replace(/-/g, "").slice(0, 8)}`;
+
   const { data, error } = await supabase
     .from("portfolios")
     .upsert(
       {
         user_id: user.id,
-        username: portfolio.username,
+        username,
         profile: portfolio.profile,
         about: portfolio.about,
         experiences: portfolio.experiences,

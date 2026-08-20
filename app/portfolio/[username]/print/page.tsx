@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
+import PrintButton from "@/components/portfolio/PrintButton";
 
 type Props = {
   params: Promise<{
@@ -250,13 +251,7 @@ export default async function PrintPortfolioPage({
       </article>
 
       <div className="fixed bottom-6 right-6 print:hidden">
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white shadow-lg hover:bg-blue-800"
-        >
-          Print / Save as PDF
-        </button>
+        <PrintButton />
       </div>
     </main>
   );

@@ -1,6 +1,20 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 
+import Navbar from "@/components/portfolio/Navbar";
+import Hero from "@/components/portfolio/Hero";
+import About from "@/components/portfolio/About";
+import Experience from "@/components/portfolio/Experience";
+import Education from "@/components/portfolio/Education";
+import Skills from "@/components/portfolio/Skills";
+import Certifications from "@/components/portfolio/Certifications";
+import Achievements from "@/components/portfolio/Achievements";
+import Gallery from "@/components/portfolio/Gallery";
+import Documents from "@/components/portfolio/Documents";
+import Footer from "@/components/portfolio/Footer";
+
+import type { PortfolioData } from "@/types/portfolio";
+
 type Props = {
   params: Promise<{
     username: string;
@@ -24,237 +38,105 @@ export default async function PublicPortfolioPage({
     notFound();
   }
 
-  const profile =
-    data.profile &&
-    typeof data.profile === "object"
-      ? data.profile as {
-          fullName?: string;
-          professionalTitle?: string;
-          location?: string;
-          email?: string;
-          phone?: string;
-          profilePhoto?: string;
-        }
-      : {};
+  const portfolio: PortfolioData = {
+    username: data.username ?? username,
 
-  const experiences = Array.isArray(data.experiences)
-    ? data.experiences
-    : [];
+    profile:
+      data.profile &&
+      typeof data.profile === "object"
+        ? data.profile
+        : {
+            fullName: "",
+            professionalTitle: "",
+            location: "",
+            email: "",
+            phone: "",
+            profilePhoto: "",
+          },
 
-  const education = Array.isArray(data.education)
-    ? data.education
-    : [];
+    about:
+      typeof data.about === "string"
+        ? data.about
+        : "",
 
-  const skills = Array.isArray(data.skills)
-    ? data.skills
-    : [];
+    experiences: Array.isArray(data.experiences)
+      ? data.experiences
+      : [],
 
-  const certifications = Array.isArray(data.certifications)
-    ? data.certifications
-    : [];
+    education: Array.isArray(data.education)
+      ? data.education
+      : [],
 
-  const achievements = Array.isArray(data.achievements)
-    ? data.achievements
-    : [];
+    skills: Array.isArray(data.skills)
+      ? data.skills
+      : [],
+
+    certifications: Array.isArray(data.certifications)
+      ? data.certifications
+      : [],
+
+    achievements: Array.isArray(data.achievements)
+      ? data.achievements
+      : [],
+
+    gallery: Array.isArray(data.gallery)
+      ? data.gallery
+      : [],
+
+    documents:
+      data.documents &&
+      typeof data.documents === "object"
+        ? data.documents
+        : {
+            cv: "",
+            other: [],
+          },
+  };
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <section className="bg-white px-6 py-20">
-        <div className="mx-auto max-w-5xl">
-          <p className="font-semibold text-blue-700">
-            Clinical Officer Portfolio
-          </p>
+    <main
+      id="top"
+      className="min-h-screen overflow-hidden bg-slate-50 text-slate-900"
+    >
+      <Navbar />
 
-          <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-6xl">
-            {profile.fullName || "Clinical Officer"}
-          </h1>
+      <Hero profile={portfolio.profile} />
 
-          <p className="mt-4 text-xl text-slate-600">
-            {profile.professionalTitle || "Clinical Officer"}
-          </p>
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <section id="about" className="scroll-mt-24">
+          <About about={portfolio.about} />
+        </section>
 
-          {profile.location && (
-            <p className="mt-2 text-slate-500">
-              {profile.location}
-            </p>
-          )}
-        </div>
-      </section>
+        <section id="experience" className="scroll-mt-24">
+          <Experience items={portfolio.experiences} />
+        </section>
 
-      <section className="mx-auto max-w-5xl space-y-12 px-6 py-12">
-        {data.about && (
-          <section>
-            <h2 className="text-2xl font-bold">About</h2>
-            <p className="mt-4 whitespace-pre-line leading-8 text-slate-600">
-              {data.about}
-            </p>
-          </section>
-        )}
+        <section id="education" className="scroll-mt-24">
+          <Education items={portfolio.education} />
+        </section>
 
-        {experiences.length > 0 && (
-          <section>
-            <h2 className="text-2xl font-bold">
-              Professional Experience
-            </h2>
+        <section id="skills" className="scroll-mt-24">
+          <Skills items={portfolio.skills} />
+        </section>
 
-            <div className="mt-6 space-y-5">
-              {experiences.map(
-                (item: Record<string, unknown>, index: number) => (
-                  <article
-                    key={String(item.id ?? index)}
-                    className="rounded-2xl border border-slate-200 bg-white p-6"
-                  >
-                    <h3 className="font-bold">
-                      {String(
-                        item.title ??
-                          item.position ??
-                          item.role ??
-                          "Experience"
-                      )}
-                    </h3>
+        <section id="certifications" className="scroll-mt-24">
+          <Certifications items={portfolio.certifications} />
+        </section>
 
-                    <p className="mt-2 text-slate-600">
-                      {String(
-                        item.organization ??
-                          item.company ??
-                          ""
-                      )}
-                    </p>
-                  </article>
-                )
-              )}
-            </div>
-          </section>
-        )}
+        <section id="achievements" className="scroll-mt-24">
+          <Achievements items={portfolio.achievements} />
+        </section>
 
-        {education.length > 0 && (
-          <section>
-            <h2 className="text-2xl font-bold">Education</h2>
+        <section id="gallery" className="scroll-mt-24">
+          <Gallery items={portfolio.gallery} />
+        </section>
 
-            <div className="mt-6 space-y-5">
-              {education.map(
-                (item: Record<string, unknown>, index: number) => (
-                  <article
-                    key={String(item.id ?? index)}
-                    className="rounded-2xl border border-slate-200 bg-white p-6"
-                  >
-                    <h3 className="font-bold">
-                      {String(
-                        item.institution ??
-                          item.school ??
-                          "Education"
-                      )}
-                    </h3>
+        <section id="documents" className="scroll-mt-24">
+          <Documents documents={portfolio.documents} />
+        </section>
+      </div>
 
-                    <p className="mt-2 text-slate-600">
-                      {String(
-                        item.course ??
-                          item.program ??
-                          item.degree ??
-                          ""
-                      )}
-                    </p>
-                  </article>
-                )
-              )}
-            </div>
-          </section>
-        )}
-
-        {skills.length > 0 && (
-          <section>
-            <h2 className="text-2xl font-bold">
-              Competencies
-            </h2>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              {skills.map(
-                (item: Record<string, unknown> | string, index: number) => (
-                  <span
-                    key={index}
-                    className="rounded-full bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700"
-                  >
-                    {typeof item === "string"
-                      ? item
-                      : String(
-                          item.name ??
-                            item.skill ??
-                            item.title ??
-                            "Skill"
-                        )}
-                  </span>
-                )
-              )}
-            </div>
-          </section>
-        )}
-
-        {certifications.length > 0 && (
-          <section>
-            <h2 className="text-2xl font-bold">
-              Certifications
-            </h2>
-
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              {certifications.map(
-                (item: Record<string, unknown>, index: number) => (
-                  <article
-                    key={String(item.id ?? index)}
-                    className="rounded-2xl border border-slate-200 bg-white p-6"
-                  >
-                    <h3 className="font-bold">
-                      {String(
-                        item.name ??
-                          item.title ??
-                          "Certification"
-                      )}
-                    </h3>
-
-                    <p className="mt-2 text-slate-600">
-                      {String(
-                        item.issuer ??
-                          item.organization ??
-                          ""
-                      )}
-                    </p>
-                  </article>
-                )
-              )}
-            </div>
-          </section>
-        )}
-
-        {achievements.length > 0 && (
-          <section>
-            <h2 className="text-2xl font-bold">
-              Achievements
-            </h2>
-
-            <div className="mt-6 space-y-4">
-              {achievements.map(
-                (item: Record<string, unknown>, index: number) => (
-                  <article
-                    key={String(item.id ?? index)}
-                    className="rounded-2xl border border-slate-200 bg-white p-6"
-                  >
-                    <h3 className="font-bold">
-                      {String(
-                        item.title ??
-                          item.name ??
-                          "Achievement"
-                      )}
-                    </h3>
-
-                    <p className="mt-2 text-slate-600">
-                      {String(item.description ?? "")}
-                    </p>
-                  </article>
-                )
-              )}
-            </div>
-          </section>
-        )}
-      </section>
+      <Footer name={portfolio.profile.fullName} />
     </main>
   );
 }
